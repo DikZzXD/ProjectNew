@@ -1,0 +1,590 @@
+/* ==========================================================================
+   Reusable pieces — stat cards, search, chips, endpoint cards, buttons
+   All surfaces are frosted glass; colour comes from per-category accents.
+   ========================================================================== */
+
+/* ── Stat cards ──────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(198px, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  position: relative;
+  overflow: visible;
+  background: var(--surface);
+  border: var(--border) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 20px 18px;
+  transition: box-shadow 0.25s var(--ease), border-color 0.2s;
+  min-width: 0;
+}
+
+.stat::before,
+.stat::after {
+  display: none;
+}
+
+.stat:hover {
+  border-color: var(--stroke-2);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.stat-ico {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--glass-2);
+  border: var(--border) solid var(--stroke);
+  color: #fff;
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 4px;
+}
+
+.stat-foot {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--mono);
+}
+
+/* Per-card tint, applied via a modifier class in the markup. Graduated grays
+   in monochrome mode — the cards read as a light→dark ramp, not colours. */
+.t-iris {
+  --tint: rgba(255, 255, 255, 0.5);
+}
+.t-cyan {
+  --tint: rgba(210, 210, 210, 0.42);
+}
+.t-lime {
+  --tint: rgba(170, 170, 170, 0.38);
+}
+.t-pink {
+  --tint: rgba(130, 130, 130, 0.4);
+}
+
+.t-iris .stat-ico {
+  color: #ffffff;
+}
+.t-cyan .stat-ico {
+  color: #d8d8d8;
+}
+.t-lime .stat-ico {
+  color: #b4b4b4;
+}
+.t-pink .stat-ico {
+  color: #949494;
+}
+
+/* Thin usage meter (RAM / CPU cards). */
+.meter {
+  position: relative;
+  height: 5px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-top: 11px;
+}
+
+.meter > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fff, #999);
+  transition: width 1.2s var(--ease);
+}
+
+/* ── Search ──────────────────────────────────────────────────── */
+.search-wrap {
+  position: relative;
+  margin: 26px 0 8px;
+  max-width: 540px;
+}
+
+.search-wrap .ico {
+  position: absolute;
+  left: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--dim);
+  pointer-events: none;
+  transition: color 0.25s;
+}
+
+.search {
+  width: 100%;
+  padding: 15px 17px 15px 46px;
+  background: var(--glass);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: var(--border) solid var(--stroke);
+  border-radius: 8px;
+  box-shadow: var(--shadow), var(--ring);
+  outline: none;
+  font-size: 14.5px;
+  transition: border-color 0.3s, box-shadow 0.3s var(--ease);
+}
+
+.search::placeholder {
+  color: var(--dim);
+}
+
+.search:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: var(--glow), var(--ring);
+}
+
+.search-wrap:focus-within .ico {
+  color: #fff;
+}
+
+.search-kbd {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  border: var(--border) solid var(--stroke);
+  background: var(--glass-2);
+  padding: 3px 8px;
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+/* ── Category chips ──────────────────────────────────────────── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 18px 0 6px;
+}
+
+.chip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--glass);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: var(--border) solid var(--stroke);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.3s var(--spring), color 0.2s, border-color 0.2s, background 0.25s;
+}
+
+.chip:hover {
+  color: var(--ink);
+  border-color: var(--stroke-2);
+  transform: translateY(-2px);
+}
+
+.chip.active {
+  background: linear-gradient(120deg, #ffffff, #cccccc);
+  color: #060606;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: var(--glow);
+  font-weight: 600;
+}
+
+/* ── Category heading ────────────────────────────────────────── */
+.cat-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--glass-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: var(--border) solid var(--stroke-2);
+  border-radius: 8px;
+  padding: 8px 17px 8px 13px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 36px 0 17px;
+  color: #fff;
+}
+
+.cat-head .ico {
+  color: #ffffff;
+}
+
+.cat-head .count {
+  font-size: 10px;
+  color: var(--dim);
+  padding-left: 3px;
+}
+
+/* ── Endpoint cards ──────────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 17px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  min-width: 0;
+  overflow: visible;
+  background: var(--surface);
+  border: var(--border) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 18px 16px;
+  transition: box-shadow 0.25s var(--ease), border-color 0.2s;
+}
+
+.card::before,
+.card::after {
+  display: none;
+}
+
+.card:hover {
+  border-color: var(--stroke-2);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-name {
+  font-weight: 600;
+  font-size: 15.5px;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+
+.card-desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.card-path {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: var(--border) solid var(--stroke);
+  border-radius: 8px;
+}
+
+/* Method chip inside the request line — same idea as the modal's .url-verb. */
+.card-path .path-verb {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 5px;
+  border: var(--border) solid var(--stroke);
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.card-path .path-verb.post {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.card-path .path-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+/* Param chips summarising each endpoint's inputs on the card face. */
+.card-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.param-chip {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: var(--border) solid var(--stroke);
+  background: var(--glass);
+  color: var(--muted);
+}
+
+.param-chip.req {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--ink);
+}
+
+/* "wajib" label on required-param chips — replaces the bare asterisk. */
+.param-chip .tag-req {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.param-chip.none,
+.param-chip.more {
+  color: var(--dim);
+  font-style: italic;
+}
+
+.card-name .rtype {
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 8px;
+  border: var(--border) solid var(--stroke-2);
+  background: var(--glass-2);
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+/* Param tally on the card foot — the method moved up into the request line. */
+.card-count {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  padding: 10px 17px;
+  border-radius: 11px;
+  border: var(--border) solid var(--stroke-2);
+  background: var(--glass-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease), background 0.25s;
+}
+
+/* Sheen that sweeps across on hover. */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transition: transform 0.6s var(--ease);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  background: var(--glass-3);
+  box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.8);
+}
+
+.btn:hover::after {
+  transform: translateX(120%);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.btn-accent {
+  background: linear-gradient(120deg, #ffffff, #cfcfcf 52%, #ededed);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #060606;
+  box-shadow: var(--glow);
+}
+
+.btn-accent:hover {
+  box-shadow: 0 20px 50px -18px rgba(255, 255, 255, 0.5);
+}
+
+.btn-ghost {
+  background: var(--glass);
+  border-color: var(--stroke);
+}
+
+.btn-sm {
+  padding: 7px 13px;
+  font-size: 10.5px;
+}
+
+/* ── Status code pill (dashboard feed + information table) ───── */
+.code {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 7px;
+  border: var(--border) solid var(--stroke);
+  background: var(--glass-2);
+  flex: none;
+}
+
+.code.s2 {
+  color: #7ce0a6;
+  border-color: rgba(58, 208, 127, 0.4);
+  background: rgba(58, 208, 127, 0.12);
+}
+
+.code.s4 {
+  color: #ff9f9f;
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.code.s5 {
+  color: #ff9f9f;
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* ── Misc ────────────────────────────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 58px 20px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border: var(--border) solid var(--stroke);
+  background: var(--glass);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+/* Skeleton shimmer used while data loads. */
+.skel {
+  border-radius: 8px;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.11) 50%,
+    rgba(255, 255, 255, 0.05) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────
+   On a phone the auto-fill grid's 280px floor can exceed the viewport once the
+   page padding is taken off, which forced a horizontal scroll; drop to a single
+   flexible column and tighten the card type scale to match the modal. */
+@media (max-width: 560px) {
+  .card-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+  .card {
+    min-height: 0;
+    padding: 14px 14px 12px;
+  }
+  .card-name {
+    font-size: 14.5px;
+  }
+  .card-desc {
+    font-size: 12px;
+  }
+  .card-path .path-text {
+    font-size: 10px;
+  }
+  .cat-head {
+    margin: 26px 0 13px;
+    font-size: 11px;
+    padding: 7px 14px 7px 11px;
+  }
+}
+

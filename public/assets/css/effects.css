@@ -1,0 +1,389 @@
+/* ==========================================================================
+   Motion layer — spider cursor, contact dock, reveal, toast
+   Everything degrades: touch keeps the native cursor, reduced-motion strips
+   the decorative pieces.
+   ========================================================================== */
+
+/* ── Spider cursor ───────────────────────────────────────────── */
+.spider {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  pointer-events: none;
+  color: #111111;
+  filter: none;
+  transition: color 0.25s;
+  will-change: transform;
+}
+
+.spider svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Legs breathe constantly, so it reads as alive rather than as an icon. */
+.spider .leg {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: leg-idle 1.9s ease-in-out infinite;
+}
+
+.spider .leg.l2 {
+  animation-delay: 0.16s;
+}
+.spider .leg.l3 {
+  animation-delay: 0.32s;
+}
+.spider .leg.l4 {
+  animation-delay: 0.48s;
+}
+
+@keyframes leg-idle {
+  50% {
+    transform: rotate(4deg) scale(1.05);
+  }
+}
+
+.spider .body {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+/* Over anything clickable: bigger, brighter, legs flare wider. */
+.spider.hot {
+  color: #000000;
+  filter: none;
+}
+
+.spider.hot .body {
+  animation: body-tick 0.7s ease-in-out infinite;
+}
+
+.spider.hot .leg {
+  animation-duration: 0.55s;
+}
+
+@keyframes body-tick {
+  50% {
+    transform: scale(1.14);
+  }
+}
+
+/* The drag-web thread trailing behind the pointer. Full-viewport so the path
+   can be drawn in raw client coordinates. */
+.web {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9998;
+  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+}
+
+.web path {
+  fill: none;
+  stroke: rgba(17, 17, 17, 0.4);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+/* Click: a ring snaps outward from the pointer. */
+.snap {
+  position: fixed;
+  z-index: 9997;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  animation: snap-out 0.55s var(--ease) forwards;
+}
+
+@keyframes snap-out {
+  to {
+    width: 78px;
+    height: 78px;
+    margin: -39px 0 0 -39px;
+    border-color: rgba(255, 255, 255, 0);
+  }
+}
+
+/* The press squash lives on the inner svg: the wrapper's transform is written
+   inline every frame, and a CSS animation there would override the position. */
+.spider.press svg {
+  animation: spider-press 0.3s var(--spring);
+}
+
+@keyframes spider-press {
+  40% {
+    transform: scale(0.74) rotate(-8deg);
+  }
+}
+
+body.has-cursor,
+body.has-cursor * {
+  cursor: none !important;
+}
+
+/* ── Contact dock ────────────────────────────────────────────── */
+.dock {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dock-item {
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  animation: dock-rise 0.55s var(--ease) backwards;
+}
+
+.dock-item:nth-child(1) {
+  animation-delay: 0.35s;
+}
+.dock-item:nth-child(2) {
+  animation-delay: 0.45s;
+}
+.dock-item:nth-child(3) {
+  animation-delay: 0.55s;
+}
+
+@keyframes dock-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.dock-ico {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 2px solid #111111;
+  box-shadow: 4px 4px 0 #111111;
+  transition: transform 0.2s var(--spring), box-shadow 0.2s var(--ease);
+}
+
+.dock-ico.wa {
+  background: #25d366;
+  color: #111111;
+}
+.dock-ico.tg {
+  background: #2aabee;
+  color: #111111;
+}
+.dock-ico.tg2 {
+  background: #8ecff0;
+  color: #111111;
+}
+
+.dock-item:hover .dock-ico {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #111111;
+}
+
+.dock-label {
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(8px);
+  pointer-events: none;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: var(--border) solid var(--stroke);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease), visibility 0.22s;
+}
+
+.dock-label small {
+  display: block;
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+
+.dock-item:hover .dock-label {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* ── Reveal — fold / unfold ──────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform-origin: 50% 0%;
+  transform: perspective(900px) rotateX(-9deg) translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: perspective(900px) rotateX(0deg) translateY(0);
+}
+
+.stagger > * {
+  opacity: 0;
+  transform-origin: 50% 0%;
+  transform: perspective(900px) rotateX(-8deg) translateY(20px);
+  animation: fold-open 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.13s; }
+.stagger > *:nth-child(4) { animation-delay: 0.18s; }
+.stagger > *:nth-child(5) { animation-delay: 0.23s; }
+.stagger > *:nth-child(6) { animation-delay: 0.28s; }
+.stagger > *:nth-child(7) { animation-delay: 0.33s; }
+.stagger > *:nth-child(8) { animation-delay: 0.38s; }
+.stagger > *:nth-child(n + 9) { animation-delay: 0.42s; }
+
+@keyframes fold-open {
+  to {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0) translateY(0);
+  }
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.para {
+  transform: translate3d(0, var(--py, 0px), 0);
+  will-change: transform;
+}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast-host {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 120;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  background: rgba(16, 16, 16, 0.88);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--stroke-2);
+  border-radius: 100px;
+  box-shadow: var(--shadow-lg), var(--ring);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  animation: toast-in 0.42s var(--spring);
+}
+
+.toast .ico {
+  color: #8ef2a8;
+}
+
+.toast.err {
+  border-color: rgba(255, 107, 107, 0.45);
+}
+
+.toast.err .ico {
+  color: #ff9f9f;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+}
+
+.toast.out {
+  animation: toast-out 0.28s var(--ease) forwards;
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+}
+
+/* ── Fallbacks ───────────────────────────────────────────────── */
+@media (hover: none), (max-width: 720px) {
+  .spider,
+  .web,
+  .snap {
+    display: none;
+  }
+  .dock {
+    right: 14px;
+    bottom: 14px;
+  }
+  .dock-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spider,
+  .web,
+  .snap,
+  .aura {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal,
+  .stagger > * {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}

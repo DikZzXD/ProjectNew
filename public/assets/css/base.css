@@ -1,0 +1,298 @@
+/* ==========================================================================
+   DIKZZAPI — Light Neo-Brutalist
+   White ground · black ink · hard black offsets · solid surfaces only.
+   ========================================================================== */
+
+:root {
+  --bg: #f5f5f5;
+  --bg-2: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --ink: #111111;
+  --muted: #4a4a4a;
+  --dim: #7a7a7a;
+
+  --glass: var(--surface);
+  --glass-2: var(--surface-2);
+  --glass-3: #e8e8e8;
+  --stroke: #111111;
+  --stroke-2: #000000;
+  --blur: none;
+  --blur-sm: none;
+
+  --accent: #111111;
+  --accent-ink: #ffffff;
+  --red: #c62828;
+  --ok: #1b7f3a;
+
+  --shadow: 4px 4px 0 #111111;
+  --shadow-lg: 6px 6px 0 #111111;
+  --shadow-sm: 3px 3px 0 #111111;
+  --ring: none;
+  --glow: none;
+  --glow-iris: none;
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --border: 2px;
+  --sidebar: 268px;
+
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  --sans: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
+  --ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
+}
+
+.aura {
+  display: none !important;
+}
+
+body::before,
+body::after {
+  display: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: #111111;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #c8c8c8;
+  border: 2px solid var(--bg);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #111111;
+}
+
+.glass {
+  position: relative;
+  background: var(--surface);
+  border: var(--border) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+}
+
+.glass::before {
+  display: none;
+}
+
+.main {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  max-width: 1200px;
+  padding: 40px 40px 140px;
+  margin-left: var(--sidebar);
+}
+
+.page-head {
+  margin-bottom: 32px;
+  max-width: 68ch;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #111111;
+  border: var(--border) solid #111111;
+  box-shadow: var(--shadow-sm);
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  font-weight: 800;
+  color: #111111;
+  overflow-wrap: break-word;
+}
+
+.grad {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  color: #111111;
+  animation: none;
+}
+
+/* Brand lockup: DikZzCode + boxed italic APIs */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111111;
+  vertical-align: middle;
+}
+
+.brand-lockup .dz {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.brand-lockup .api-it,
+.api-it {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 0.72em;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 0.28em 0.42em 0.32em;
+  border: 2px solid #111111;
+  border-radius: 6px;
+  background: #111111;
+  color: #ffffff;
+  box-shadow: 2px 2px 0 #111111;
+  vertical-align: middle;
+  animation: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+}
+
+.brand-lockup.lg .api-it {
+  font-size: 0.55em;
+  padding: 0.32em 0.48em 0.36em;
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 #111111;
+}
+
+h1 .brand-lockup {
+  gap: 0.22em;
+}
+
+.lede {
+  color: var(--muted);
+  max-width: 58ch;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 48px 0 18px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: #111111;
+  opacity: 0.15;
+}
+
+.prose {
+  color: var(--muted);
+  margin: 0;
+  max-width: 70ch;
+  font-weight: 500;
+  overflow-wrap: break-word;
+}
+
+.prose strong {
+  color: #111111;
+  font-weight: 700;
+}
+
+.prose code,
+.error-body code,
+.spec-val {
+  font-family: var(--mono);
+}
+
+.scroll-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  height: 3px;
+  width: 100%;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: #111111;
+  pointer-events: none;
+}
+
+@media (max-width: 980px) {
+  .main {
+    margin-left: 0;
+    padding: 88px 18px 140px;
+  }
+}

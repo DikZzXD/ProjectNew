@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — DikZzCodeAPIs</title>
+<meta name="description" content="Control plane DikZzCodeAPIs: total request, bandwidth terpakai, dan aktivitas endpoint terbaru.">
+<meta name="author" content="DikZzCode">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/sidebar.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/dashboard.css">
+<link rel="stylesheet" href="/assets/css/effects.css">
+<link rel="stylesheet" href="/assets/css/brutal.css">
+</head>
+<body>
+
+<main class="main">
+  <!-- Hero: the brand statement the site was missing -->
+  <section class="hero glass reveal">
+    <div class="hero-copy">
+      <span class="eyebrow" data-ico="bolt">Control Plane</span>
+      <h1><span class="brand-lockup lg"><span class="dz">DikZzCode</span><i class="api-it">APIs</i></span></h1>
+      <p class="lede">
+        Satu base URL untuk AI, generator gambar, email sementara, bypass Turnstile,
+        Alight Motion Premium, dan tools harian. Tanpa API key — tinggal panggil.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-accent" href="/docs" data-ico-btn="docs"><span>Buka Dokumentasi</span></a>
+        <a class="btn btn-ghost" href="/information" data-ico-btn="info"><span>Cara Pakai</span></a>
+      </div>
+    </div>
+
+    <!-- .para drifts with scroll; kept off .hero itself because .reveal owns
+         that element's transform. -->
+    <div class="hero-dial para" data-rate="0.06">
+      <div class="cap">Total Requests</div>
+      <div class="big" id="h-requests">0</div>
+      <div class="row"><span id="h-endpoints">0 endpoint</span><span id="h-colo">—</span></div>
+    </div>
+  </section>
+
+  <section class="stat-grid stagger">
+    <div class="stat t-iris">
+      <div class="stat-top">
+        <div class="stat-value" id="t-requests">0</div>
+        <div class="stat-ico" data-ico="activity"></div>
+      </div>
+      <div class="stat-label">Requests 24 Jam</div>
+      <div class="stat-foot" id="t-requests-foot">—</div>
+    </div>
+
+    <div class="stat t-cyan">
+      <div class="stat-top">
+        <div class="stat-value" id="t-bandwidth">0 GB</div>
+        <div class="stat-ico" data-ico="cloud"></div>
+      </div>
+      <div class="stat-label">Bandwidth 24 Jam</div>
+      <div class="stat-foot" id="t-bandwidth-foot">—</div>
+    </div>
+
+    <div class="stat t-lime">
+      <div class="stat-top">
+        <div class="stat-value" id="t-endpoints">0</div>
+        <div class="stat-ico" data-ico="layers"></div>
+      </div>
+      <div class="stat-label">Live Endpoints</div>
+      <div class="stat-foot" id="t-endpoints-foot">—</div>
+    </div>
+
+    <div class="stat t-pink">
+      <div class="stat-top">
+        <div class="stat-value" id="t-latency">0ms</div>
+        <div class="stat-ico" data-ico="gauge"></div>
+      </div>
+      <div class="stat-label">Avg Latency</div>
+      <div class="stat-foot" id="t-latency-foot">—</div>
+    </div>
+  </section>
+
+  <div class="section-title">Ringkasan Bulan Ini</div>
+
+  <section class="month-grid stagger">
+    <div class="month-cell">
+      <div class="cap" id="m-label">Bulan ini</div>
+      <div class="month-value" id="m-requests">0</div>
+      <div class="month-sub">requests</div>
+    </div>
+    <div class="month-cell">
+      <div class="cap">Bandwidth</div>
+      <div class="month-value" id="m-bandwidth">0 MB</div>
+      <div class="month-sub" id="m-days">— hari aktif</div>
+    </div>
+    <div class="month-cell">
+      <div class="cap">Sukses</div>
+      <div class="month-value" id="m-success">100%</div>
+      <div class="month-sub" id="m-errors">0 error</div>
+    </div>
+    <div class="month-cell">
+      <div class="cap">Total Sepanjang Waktu</div>
+      <div class="month-value" id="m-alltime">0</div>
+      <div class="month-sub" id="m-alltime-sub">requests</div>
+    </div>
+  </section>
+
+  <div class="section-title">Traffic</div>
+
+  <section class="panel-grid">
+    <div class="panel reveal">
+      <div class="panel-head">
+        <span data-ico="clock"></span>
+        <h2>Latest Requests</h2>
+        <button class="btn btn-ghost btn-sm" id="refresh" style="margin-left:auto" data-ico-btn="bolt">
+          <span>Refresh</span>
+        </button>
+      </div>
+      <div class="panel-body feed" id="feed">
+        <div class="empty"><span class="spinner"></span></div>
+      </div>
+    </div>
+
+    <div class="panel reveal">
+      <div class="panel-head">
+        <span data-ico="arrowUp"></span>
+        <h2>Most Used API</h2>
+        <span class="tag" style="margin-left:auto">by hits</span>
+      </div>
+      <div class="panel-body" id="top">
+        <div class="empty"><span class="spinner"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title">Highlights</div>
+
+  <section class="rail">
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="mail"></div>
+      <div>
+        <h3>Email Sementara</h3>
+        <p>Alamat <em>@bahlil.codes</em> random atau custom, langsung hidup. OTP dan link verifikasi ikut di response.</p>
+      </div>
+    </div>
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="inbox"></div>
+      <div>
+        <h3>Mail Edu</h3>
+        <p>Email <em>.edu</em> sementara di dua domain kampus, buat daftar yang minta alamat institusi.</p>
+      </div>
+    </div>
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="bolt"></div>
+      <div>
+        <h3>Alight Motion</h3>
+        <p>Satu endpoint untuk seluruh alur: kirim email, verifikasi lewat link, langsung aktif Premium.</p>
+      </div>
+    </div>
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="image"></div>
+      <div>
+        <h3>Text To Image</h3>
+        <p>Kirim prompt bahasa Indonesia atau Inggris, response-nya langsung berupa foto siap pakai.</p>
+      </div>
+    </div>
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="shield"></div>
+      <div>
+        <h3>Bypass Turnstile</h3>
+        <p>Kirim URL dan sitekey, dapat token siap tempel di field <em>cf-turnstile-response</em>.</p>
+      </div>
+    </div>
+    <div class="rail-item reveal">
+      <div class="rail-ico" data-ico="key"></div>
+      <div>
+        <h3>Tanpa API Key</h3>
+        <p>Semua endpoint terbuka dan response-nya satu format. Cocok dipakai bot maupun web langsung.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="stat-foot" style="border:0;margin-top:22px" id="sync">Loading…</p>
+</main>
+
+<script type="module">
+  import { icon } from '/assets/js/icons.js';
+  document.querySelectorAll('[data-ico]').forEach((el) => {
+    el.insertAdjacentHTML('afterbegin', icon(el.dataset.ico, 17));
+  });
+  document.querySelectorAll('[data-ico-btn]').forEach((el) => {
+    el.insertAdjacentHTML('afterbegin', icon(el.dataset.icoBtn, 13));
+  });
+</script>
+<script type="module" src="/assets/js/dashboard.js"></script>
+</body>
+</html>

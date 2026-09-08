@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e 'try{const c=require\\(\"./test/config.json\"\\);console.log\\(Object.entries\\(c\\).map\\(\\([k,v]\\)=>`${k}: ${typeof v===\"string\"?\\(v?\"<set len=\"+v.length+\">\":\"<empty>\"\\):JSON.stringify\\(v\\)}`\\).join\\(\"\\\\n\"\\)\\)}catch\\(e\\){console.log\\(\"no config.json\"\\)}')",
+      "Bash(node -e 'const fs=require\\(\"fs\"\\);try{console.log\\(fs.readFileSync\\(\".dev.vars\",\"utf8\"\\).split\\(/\\\\r?\\\\n/\\).filter\\(Boolean\\).map\\(l=>l.split\\(\"=\"\\)[0]\\).join\\(\"\\\\n\"\\)\\)}catch\\(e\\){console.log\\(\"none\"\\)}')",
+      "mcp__exa__web_search_exa"
+    ]
+  }
+}

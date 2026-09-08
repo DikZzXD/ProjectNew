@@ -1,0 +1,786 @@
+/* ==========================================================================
+   Playground modal — glass sheet, param inputs, language tabs, code boxes
+   ========================================================================== */
+
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 4, 4, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+
+.modal-scrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  position: relative;
+  width: min(1060px, 100%);
+  max-height: min(90vh, 980px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(14, 16, 26, 0.82);
+  backdrop-filter: saturate(180%) blur(30px);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+  border: 1px solid var(--stroke-2);
+  border-radius: 18px;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9), var(--ring);
+  transform: translateY(18px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.42s var(--spring), opacity 0.3s var(--ease);
+}
+
+.modal-scrim.open .modal {
+  transform: none;
+  opacity: 1;
+}
+
+.modal-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
+  border-bottom: 1px solid var(--stroke);
+}
+
+.modal-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.modal-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.modal-x {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--glass-2);
+  border: 1px solid var(--stroke);
+  border-radius: 9px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.35s var(--spring), background 0.25s;
+}
+
+.modal-x:hover {
+  transform: rotate(90deg);
+  background: rgba(255, 107, 107, 0.22);
+}
+
+.modal-body {
+  padding: 14px 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Two-column playground: inputs left, request/response right ──
+   On a wide screen the form and the result are visible at the same time, so
+   testing an endpoint no longer means scrolling back and forth. Collapses to a
+   single column on tablets and phones. */
+.pg {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.pg-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Params sit in an auto-fitting grid so short fields pair up side by side. */
+.pg-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px 12px;
+  align-content: start;
+}
+
+/* Textareas and anything long-form take the full row. */
+.pg-fields .field.wide {
+  grid-column: 1 / -1;
+}
+
+/* ── Panels ──────────────────────────────────────────────────────
+   Each region (inputs / request / response) is its own faint card with a
+   heading. Without them the modal was one flat stack of controls and code, and
+   the input area in particular had no visual boundary — the main complaint. */
+.pg-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px 12px 12px;
+  background: rgba(255, 255, 255, 0.028);
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+}
+
+.pg-panel > .box-label {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--stroke);
+}
+
+/* Right-align trailing chips in a panel heading (field tally, status). */
+.pg-panel > .box-label .pill:first-of-type {
+  margin-left: auto;
+}
+
+.modal-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.modal-foot .hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.modal-foot .btn {
+  margin-left: auto;
+}
+
+/* ── Fields ──────────────────────────────────────────────────── */
+/* Request URL strip: method chip + the live URL + an inline copy button. */
+.field-url {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #e6e6e6;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  padding: 9px 10px;
+}
+
+.url-verb {
+  flex: none;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--stroke);
+  color: var(--ink);
+}
+
+.url-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-height: 54px;
+  overflow-y: auto;
+  word-break: break-all;
+  color: #cfd6e0;
+}
+
+/* Two classes so this beats the base `.copy { position: absolute }` further
+   down the file — the URL copy button sits inline in the strip, not floating. */
+.field-url .copy.copy-url {
+  position: static;
+  flex: none;
+  padding: 4px 7px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+/* The active field's label brightens, so on a dense grid it's obvious which
+   input has focus without adding another border colour. */
+.field:focus-within label {
+  color: var(--ink);
+}
+
+/* "optional" tag sits at the right edge, away from the param name. */
+.field label .pill-opt {
+  margin-left: auto;
+}
+
+.field label .req {
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Per-param note from the endpoint definition's `desc`, sits under the control. */
+.field-hint {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--dim);
+  padding-left: 2px;
+}
+
+/* ── Alight stepped control (Send → Verify → Status) ─────────── */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.steps .step {
+  /* `1 1 0` alone would squeeze a 4-step flow ("TERSAMBUNG", "HAPUS AKUN") until
+     the labels clip; a basis lets them wrap to a second row on narrow screens. */
+  flex: 1 1 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.3s var(--spring), color 0.2s, background 0.25s, border-color 0.2s, opacity 0.2s;
+}
+
+.steps .step .step-n {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  background: var(--glass-2);
+  border: 1px solid var(--stroke);
+}
+
+.steps .step:hover:not(:disabled) {
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.steps .step.active {
+  background: linear-gradient(120deg, #ffffff, #cccccc);
+  color: #060606;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: var(--glow);
+}
+
+.steps .step.active .step-n {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #060606;
+}
+
+.steps .step.done {
+  color: var(--ink);
+  border-color: var(--stroke-2);
+}
+
+.steps .step.done .step-n {
+  color: var(--ok);
+  border-color: rgba(58, 208, 127, 0.5);
+}
+
+.steps .step.locked,
+.steps .step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.input[readonly] {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.pill-opt {
+  font-size: 8.5px;
+  letter-spacing: 0.09em;
+  padding: 2px 6px;
+  border-radius: 100px;
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  color: var(--dim);
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--stroke);
+  border-radius: 9px;
+  outline: none;
+  font-size: 12.5px;
+  transition: border-color 0.25s, box-shadow 0.3s var(--ease), background 0.25s;
+}
+
+.input::placeholder {
+  color: var(--dim);
+  font-size: 11.5px;
+}
+
+.input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+select.input {
+  cursor: pointer;
+  appearance: none;
+  padding-right: 26px;
+  /* Chevron drawn inline so the native arrow doesn't clash with the theme. */
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 15px) center, calc(100% - 10px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+select.input option {
+  background: #12141c;
+  color: var(--ink);
+}
+
+textarea.input {
+  min-height: 58px;
+  max-height: 190px;
+  resize: vertical;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+/* File picker — themed to match the text inputs. */
+.input-file {
+  padding: 6px 9px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.input-file::file-selector-button {
+  margin-right: 10px;
+  padding: 5px 11px;
+  border: 1px solid var(--stroke);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.input-file::file-selector-button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Language tabs ───────────────────────────────────────────── */
+.langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lang {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 11px;
+  border-radius: 100px;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.3s var(--spring), color 0.2s, background 0.25s, border-color 0.2s;
+}
+
+.lang:hover {
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.lang.active {
+  background: linear-gradient(120deg, #ffffff, #cccccc);
+  color: #060606;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: var(--glow);
+  font-weight: 600;
+}
+
+/* ── Code / response boxes ───────────────────────────────────── */
+.code-box {
+  position: relative;
+  background: rgba(0, 0, 0, 0.46);
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  max-height: 230px;
+  overflow: auto;
+}
+
+/* The response box gets more room — it's the thing you actually read. */
+.code-box.tall {
+  max-height: 340px;
+}
+
+.code-box pre {
+  margin: 0;
+  padding: 11px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #cdd5df;
+  /* Leaves room for the floating COPY chip without indenting every line. */
+  padding-right: 58px;
+}
+
+/* Image results: centred on a checkered mat so PNG transparency reads.
+   The box's own max-height is dropped, otherwise the preview would sit in a
+   nested scroller inside the already-scrolling modal body. */
+.code-box:has(.img-out) {
+  max-height: none;
+  overflow: visible;
+}
+
+.img-out {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.03);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+}
+
+.code-box img,
+.img-out img {
+  display: block;
+  max-width: 100%;
+  max-height: 340px;
+  width: auto;
+  height: auto;
+  border-radius: 11px;
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow-lg);
+  animation: img-pop 0.5s var(--spring);
+}
+
+@keyframes img-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+.img-meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.img-meta .grow {
+  margin-left: auto;
+}
+
+/* The SAVE link sits inline in the meta strip rather than floating. */
+.img-meta a.copy {
+  text-decoration: none;
+}
+
+.copy {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--glass-3);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--stroke-2);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.3s var(--spring), background 0.25s;
+}
+
+.copy:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.copy.done {
+  background: rgba(58, 208, 127, 0.3);
+  border-color: rgba(58, 208, 127, 0.5);
+}
+
+.box-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.box-label .pill {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 100px;
+  border: 1px solid var(--stroke);
+  background: var(--glass-2);
+}
+
+.box-label .pill.ok {
+  color: #7ce0a6;
+  border-color: rgba(58, 208, 127, 0.45);
+  background: rgba(58, 208, 127, 0.1);
+}
+
+.box-label .pill.err {
+  color: #ff9f9f;
+  border-color: rgba(255, 107, 107, 0.4);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* Payload size / content-type next to the status pill — same compact mono
+   style, but borderless so the pill stays the thing your eye lands on. */
+.box-label .meta-chip {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  margin-left: -2px;
+}
+
+.box-label .meta-chip[hidden] {
+  display: none;
+}
+
+/* JSON colouring applied by playground.js. The palette stays essentially
+   monochrome — only the two status booleans and error strings borrow the
+   green/red already reserved for status, so a true/false result reads at a
+   glance instead of blending into the grey ramp. */
+.j-key {
+  color: #ffffff;
+  font-weight: 500;
+}
+.j-str {
+  color: #b9c4cf;
+}
+.j-num {
+  color: #ecebe7;
+}
+.j-bool {
+  color: #9a9a9a;
+}
+.j-bool.t {
+  color: #7ce0a6;
+}
+.j-bool.f {
+  color: #ff9f9f;
+}
+.j-null {
+  color: var(--dim);
+}
+.j-punc {
+  color: #5d6470;
+}
+/* A URL inside a string value — underlined so links stand out from prose. */
+.j-url {
+  color: #d6dee8;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.24);
+  text-underline-offset: 2px;
+}
+
+/* ── Loading ─────────────────────────────────────────────────── */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-top-color: var(--iris);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────
+   Below 900px the two columns stack, so the form comes first and the
+   request/response follow — the same reading order as the old layout, just
+   with the tighter type scale. */
+@media (max-width: 900px) {
+  .pg {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+  .code-box,
+  .code-box.tall {
+    max-height: 260px;
+  }
+}
+
+@media (max-width: 560px) {
+  .modal-scrim {
+    padding: 8px;
+  }
+  .modal {
+    max-height: 94vh;
+    border-radius: 15px;
+  }
+  .modal-head {
+    padding: 11px 13px;
+  }
+  .modal-body {
+    padding: 12px 13px;
+  }
+  .modal-foot {
+    padding: 10px 13px;
+  }
+  /* One field per row on a phone — two columns would squeeze both. */
+  .pg-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Panels keep their heading but give the padding back to the inputs. */
+  .pg-panel {
+    padding: 9px 9px 10px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+  /* Six language tabs wrapped onto three rows and pushed the response off
+     screen; one swipeable row instead. */
+  .langs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 1px;
+  }
+  .langs::-webkit-scrollbar {
+    display: none;
+  }
+  .lang {
+    flex: none;
+  }
+  .field-url {
+    font-size: 10px;
+  }
+  .url-text {
+    max-height: 46px;
+  }
+  .code-box pre {
+    font-size: 10px;
+    /* The COPY chip shrinks on a phone, so the gutter shrinks with it. */
+    padding-right: 42px;
+  }
+  .code-box .copy span {
+    display: none;
+  }
+  .code-box .copy {
+    padding: 4px 6px;
+  }
+  .steps .step {
+    font-size: 9px;
+    padding: 6px 5px;
+  }
+  /* iOS Safari auto-zooms the page when a focused control is under 16px, which
+     left the modal scrolled sideways after every tap. One field per row means
+     there's room for full-size text here. */
+  .input,
+  textarea.input,
+  select.input {
+    font-size: 16px;
+  }
+  .input::placeholder {
+    font-size: 13px;
+  }
+  .modal-foot .hint {
+    display: none;
+  }
+  .modal-foot .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS ubot_leases (account_id INTEGER PRIMARY KEY, holder TEXT NOT NULL DEFAULT '', until INTEGER NOT NULL DEFAULT 0);
+DELETE FROM ubot_leases;
+INSERT INTO ubot_leases (account_id, holder, until) VALUES (1, 'A', 9999999999999);
+UPDATE ubot_leases SET holder = 'B', until = 9999999999999 WHERE account_id = 1 AND until < 1700000000000;
+SELECT 'live_lease_holder' AS check_name, holder AS value FROM ubot_leases WHERE account_id = 1;
+UPDATE ubot_leases SET until = 0 WHERE account_id = 1 AND holder = 'A';
+UPDATE ubot_leases SET holder = 'C', until = 9999999999999 WHERE account_id = 1 AND until < 1700000000000;
+SELECT 'after_release_holder' AS check_name, holder AS value FROM ubot_leases WHERE account_id = 1;
+UPDATE ubot_leases SET until = 123 WHERE account_id = 1 AND holder = 'A';
+SELECT 'renew_by_wrong_holder_until' AS check_name, until AS value FROM ubot_leases WHERE account_id = 1;

@@ -1,0 +1,325 @@
+/* ==========================================================================
+   Information page: contact cards, spec rows, quickstart, callouts
+   ========================================================================== */
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 16px;
+}
+
+.contact {
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  min-width: 0;
+  background: var(--glass);
+  border: var(--border) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.25s var(--ease), border-color 0.2s;
+}
+
+.contact:hover {
+  border-color: var(--stroke-2);
+  box-shadow: var(--shadow-lg);
+}
+
+.contact::before {
+  display: none;
+}
+
+.contact-ico {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #05070c;
+  animation: dock-float 3.6s ease-in-out infinite;
+}
+
+.contact:nth-child(2) .contact-ico {
+  animation-delay: 0.4s;
+}
+.contact:nth-child(3) .contact-ico {
+  animation-delay: 0.8s;
+}
+
+.contact-ico.wa {
+  background: linear-gradient(140deg, #4ce87e, #17b94f);
+  box-shadow: 0 10px 26px -10px rgba(37, 211, 102, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.contact-ico.tg {
+  background: linear-gradient(140deg, #55c8f7, #1a92dd);
+  box-shadow: 0 10px 26px -10px rgba(41, 169, 235, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.contact-ico.tg2 {
+  background: linear-gradient(140deg, #a9c8dc, #6f96b4);
+  box-shadow: 0 10px 26px -10px rgba(122, 167, 199, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.contact-title {
+  display: block;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.contact-value {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.contact-note {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e0e0e0;
+  margin-top: 3px;
+}
+
+.contact .go {
+  margin-left: auto;
+  color: var(--dim);
+  flex: none;
+  transition: color 0.25s, transform 0.35s var(--spring);
+}
+
+.contact:hover .go {
+  color: #ffffff;
+  transform: translate(3px, -3px);
+}
+
+/* ── Spec table ──────────────────────────────────────────────── */
+
+/* A plain glass sheet for the spec/status rows — no stat-card padding tricks. */
+.sheet {
+  padding: 6px 20px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), var(--ring);
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.spec:last-child {
+  border-bottom: 0;
+}
+
+.spec-key {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  min-width: 132px;
+}
+
+.spec-val {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+.spec .ico {
+  color: #ffffff;
+  flex: none;
+}
+
+/* Rows keyed by a value the caller types (model names, enum options) rather than
+   a status code: the pill is left-aligned to a common width so the column reads
+   as a column. */
+.spec .code.key {
+  min-width: 86px;
+  text-align: center;
+}
+
+/* ── Prose blocks ────────────────────────────────────────────── */
+.prose {
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+.prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.prose code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: #e6e6e6;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.steps {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 13px;
+}
+
+.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 42px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 9px;
+  background: var(--glass-2);
+  border: 1px solid var(--stroke);
+  color: #ffffff;
+}
+
+.steps li b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.note {
+  display: flex;
+  gap: 13px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 3px solid #ffffff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.note .ico {
+  color: #ffffff;
+  flex: none;
+  margin-top: 2px;
+}
+
+.note b {
+  color: var(--ink);
+}
+
+/* ── Info cards (status / stats / notes) ─────────────────────── */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.info-card {
+  background: #ffffff;
+  border: 2px solid #111111;
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 #111111;
+  padding: 18px 18px 16px;
+  min-width: 0;
+}
+
+.info-card.wide {
+  grid-column: 1 / -1;
+}
+
+.info-card-kicker {
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #111111;
+  border: 2px solid #111111;
+  border-radius: 5px;
+  padding: 4px 8px;
+  margin-bottom: 12px;
+}
+
+.info-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #111111;
+}
+
+.info-card p {
+  margin: 0;
+  color: #4a4a4a;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.info-card code {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  background: #f0f0f0;
+  border: 1.5px solid #111111;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.credit-sheet {
+  padding: 20px 22px !important;
+}
+
+.credit-row {
+  display: grid;
+  gap: 14px;
+  padding: 8px 0 12px;
+}
+
+.credit-row .prose {
+  max-width: 62ch;
+}
+
+@media (max-width: 720px) {
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
+  .info-card.wide {
+    grid-column: auto;
+  }
+}

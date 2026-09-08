@@ -1,0 +1,24 @@
+{
+  "name": "makluxnxx-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API documentation portal + live playground running on Cloudflare Workers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute makluxnxx-api-stats --remote --file=./schema.sql",
+    "db:init:local": "wrangler d1 execute makluxnxx-api-stats --local --file=./schema.sql",
+    "new": "node scripts/new-api.mjs",
+    "test:pool": "node scripts/test-keypool.mjs",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "4.124.0"
+  },
+  "dependencies": {
+    "curve25519-js": "^0.0.4",
+    "libphonenumber-js": "^1.13.12",
+    "telegram": "^2.26.22"
+  }
+}

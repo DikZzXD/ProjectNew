@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Information — DikZzCodeAPIs</title>
+<meta name="description" content="Informasi developer DikZzCodeAPIs, panduan pemakaian, format response, dan kontak bantuan.">
+<meta name="author" content="DikZzCode">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/sidebar.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/modal.css">
+<link rel="stylesheet" href="/assets/css/information.css">
+<link rel="stylesheet" href="/assets/css/effects.css">
+<link rel="stylesheet" href="/assets/css/brutal.css">
+</head>
+<body>
+
+<main class="main">
+  <header class="page-head reveal">
+    <span class="eyebrow" data-ico="info">Information</span>
+    <h1>Developer Information</h1>
+    <p class="lede">
+      Semua yang perlu kamu tahu sebelum memakai
+      <span class="brand-lockup"><span class="dz">DikZzCode</span><i class="api-it">APIs</i></span>
+      — cara pakai, format response, batasan, dan kontak bantuan.
+    </p>
+  </header>
+
+  <div class="note reveal" data-ico="info">
+    <div>
+      <b>Ada kendala?</b> Kalau endpoint error, response tidak sesuai, atau kamu butuh
+      endpoint baru — hubungi developer lewat kontak di bawah. Sertakan URL request
+      dan response yang kamu terima supaya cepat ditelusuri.
+    </div>
+  </div>
+
+  <div class="section-title">Contact Developer</div>
+
+  <section class="info-grid stagger">
+    <a class="contact" href="https://wa.me/6285757411154" target="_blank" rel="noopener">
+      <span class="contact-ico wa" data-ico="whatsapp"></span>
+      <span>
+        <span class="contact-title">WhatsApp</span>
+        <span class="contact-value">+62 857-5741-1154</span>
+        <span class="contact-note">Respon tercepat</span>
+      </span>
+      <span class="go" data-ico="external"></span>
+    </a>
+
+    <a class="contact" href="https://t.me/maklohytam" target="_blank" rel="noopener">
+      <span class="contact-ico tg" data-ico="telegram"></span>
+      <span>
+        <span class="contact-title">Telegram Utama</span>
+        <span class="contact-value">@maklohytam</span>
+        <span class="contact-note">Akun utama</span>
+      </span>
+      <span class="go" data-ico="external"></span>
+    </a>
+
+    <a class="contact" href="https://t.me/dikzxinxz" target="_blank" rel="noopener">
+      <span class="contact-ico tg2" data-ico="telegram"></span>
+      <span>
+        <span class="contact-title">Telegram Backup</span>
+        <span class="contact-value">@dikzxinxz</span>
+        <span class="contact-note">Kalau utama tidak aktif</span>
+      </span>
+      <span class="go" data-ico="external"></span>
+    </a>
+  </section>
+
+  <div class="section-title">Platform</div>
+
+  <section class="sheet reveal">
+    <div class="spec"><span data-ico="globe"></span><span class="spec-key">Base URL</span><span class="spec-val">https://api.makluxnxx.my.id</span></div>
+    <div class="spec"><span data-ico="docs"></span><span class="spec-key">Prefix</span><span class="spec-val">/v1/&lt;category&gt;/&lt;endpoint&gt;</span></div>
+    <div class="spec"><span data-ico="cloud"></span><span class="spec-key">Runtime</span><span class="spec-val" id="i-runtime">—</span></div>
+    <div class="spec"><span data-ico="chip"></span><span class="spec-key">Edge Location</span><span class="spec-val" id="i-colo">—</span></div>
+    <div class="spec"><span data-ico="layers"></span><span class="spec-key">Total Endpoint</span><span class="spec-val" id="i-total">—</span></div>
+    <div class="spec"><span data-ico="key"></span><span class="spec-key">API Key</span><span class="spec-val">Tidak perlu — semua endpoint publik</span></div>
+    <div class="spec"><span data-ico="shield"></span><span class="spec-key">CORS</span><span class="spec-val">Terbuka (Access-Control-Allow-Origin: *)</span></div>
+    <div class="spec"><span data-ico="clock"></span><span class="spec-key">Timeout</span><span class="spec-val">15 detik per upstream request</span></div>
+  </section>
+
+  <div class="section-title">Format Response</div>
+
+  <section class="sheet reveal">
+    <div class="spec"><span data-ico="check"></span><span class="spec-key">Sukses</span><span class="spec-val">{ "status": true, "creator": "DikZzCode — t.me/maklohytam", "result": { … } }</span></div>
+    <div class="spec"><span data-ico="close"></span><span class="spec-key">Gagal</span><span class="spec-val">{ "status": false, "creator": "…", "message": "alasan error" }</span></div>
+    <div class="spec"><span data-ico="shield"></span><span class="spec-key">Creator</span><span class="spec-val">Selalu stamped DikZzCode — creator upstream tidak diteruskan</span></div>
+  </section>
+
+  <div class="section-title">HTTP Status Codes</div>
+
+  <section class="sheet reveal">
+    <div class="error-grid">
+      <div class="error-row">
+        <span class="code s2">200</span>
+        <div class="error-body">
+          <b>OK</b>
+          <span>Request berhasil. Body JSON memakai <code>status: true</code> dan payload di <code>result</code>.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s2">204</span>
+        <div class="error-body">
+          <b>No Content</b>
+          <span>Preflight CORS (<code>OPTIONS</code>). Tidak ada body.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s4">400</span>
+        <div class="error-body">
+          <b>Bad Request</b>
+          <span>Parameter salah / kurang / format tidak valid. Baca <code>message</code>.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s4">404</span>
+        <div class="error-body">
+          <b>Not Found</b>
+          <span>Path tidak ada, atau query tidak menghasilkan data.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s4">409</span>
+        <div class="error-body">
+          <b>Conflict</b>
+          <span>State bentrok — resource sudah dipakai atau langkah belum siap.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s4">429</span>
+        <div class="error-body">
+          <b>Too Many Requests</b>
+          <span>Limit / cooldown aktif. Tunggu sesuai pesan.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s5">500</span>
+        <div class="error-body">
+          <b>Internal Server Error</b>
+          <span>Error di sisi Worker. Laporkan ke developer.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s5">502</span>
+        <div class="error-body">
+          <b>Bad Gateway</b>
+          <span>Upstream gagal dihubungi atau membalas error. Coba lagi sebentar.</span>
+        </div>
+      </div>
+      <div class="error-row">
+        <span class="code s5">503</span>
+        <div class="error-body">
+          <b>Service Unavailable</b>
+          <span>Layanan sementara tidak siap (kuota / capacity). Retry nanti.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title">JSON status vs HTTP</div>
+
+  <section class="info-cards stagger">
+    <article class="info-card">
+      <div class="info-card-kicker">HTTP</div>
+      <h3>Status transport</h3>
+      <p>Kode di response header: <code>200</code>, <code>400</code>, <code>502</code>, dll. Menunjukkan hasil pengiriman request.</p>
+    </article>
+    <article class="info-card">
+      <div class="info-card-kicker">JSON</div>
+      <h3>Status bisnis</h3>
+      <p>Field body <code>status: true|false</code>. Sukses atau gagal di dalam envelope API.</p>
+    </article>
+    <article class="info-card wide">
+      <div class="info-card-kicker">Catatan</div>
+      <h3>Keduanya bisa beda konteks</h3>
+      <p>Kalau HTTP <code>400</code>/<code>502</code>, body tetap envelope DikZzCode dengan <code>status: false</code> dan <code>message</code> yang bisa ditampilkan ke user.</p>
+    </article>
+  </section>
+
+  <div class="section-title">Statistik</div>
+
+  <section class="info-cards stagger">
+    <article class="info-card">
+      <div class="info-card-kicker">24 jam</div>
+      <h3>Kartu dashboard besar</h3>
+      <p>Requests, bandwidth, latency, dan endpoint terpakai hanya dari <b>24 jam terakhir</b>. Angka turun sendiri saat request lama kedaluwarsa — tanpa tombol reset.</p>
+    </article>
+    <article class="info-card">
+      <div class="info-card-kicker">Permanen</div>
+      <h3>Bulanan &amp; all-time</h3>
+      <p><b>Ringkasan Bulan Ini</b> dan total sepanjang waktu disimpan terpisah, jadi tidak hilang saat window 24 jam berganti.</p>
+    </article>
+  </section>
+
+  <div class="section-title">Userbot Telegram</div>
+
+  <section class="info-cards stagger">
+    <article class="info-card">
+      <div class="info-card-kicker">Login</div>
+      <h3>Nomor → OTP → PIN → Aktif</h3>
+      <p>Login MTProto userbot: masukkan nomor (sender), verifikasi kode OTP, dan PIN 2FA jika ada. Cukup login sekali, userbot langsung aktif di Telegram.</p>
+    </article>
+    <article class="info-card">
+      <div class="info-card-kicker">API ID &amp; Hash</div>
+      <h3>Default Terpasang</h3>
+      <p>api_id (<code>39191050</code>) dan api_hash sudah terkonfigurasi default dari sistem, sehingga kamu bisa langsung login tanpa repot memasukkan manual.</p>
+    </article>
+    <article class="info-card">
+      <div class="info-card-kicker">Token</div>
+      <h3>account_token tersimpan aman</h3>
+      <p>Database menyimpan sesi Telegram terenkripsi AES-256-GCM. <code>account_token</code> digunakan untuk mengecek status dan menyinkronkan userbot.</p>
+    </article>
+    <article class="info-card wide">
+      <div class="info-card-kicker">Perintah Telegram</div>
+      <h3>Fitur Lengkap Sama Seperti userbot.py</h3>
+      <p>Di Telegram kamu bisa langsung memakai perintah: <code>.help</code> (daftar perintah), <code>.ping</code> (cek pong), <code>.id</code> (cek ID chat/user), <code>.promosi &lt;teks&gt;</code> (broadcast ke semua grup / reply pesan), <code>.addbl</code>, <code>.delbl</code>, <code>.listbl</code> (manajemen blacklist), <code>.setdelay &lt;min&gt; &lt;max&gt;</code> (jeda antar grup), dan <code>.stop</code> (hentikan broadcast).</p>
+    </article>
+  </section>
+
+  <div class="section-title">Credit</div>
+
+  <section class="sheet reveal credit-sheet">
+    <div class="credit-row">
+      <span class="brand-lockup lg"><span class="dz">DikZzCode</span><i class="api-it">APIs</i></span>
+      <p class="prose">
+        Dibangun dan dirawat oleh <strong>DikZzCode</strong>. Berjalan di Cloudflare Workers
+        dengan statistik D1. Bebas dipakai untuk project pribadi maupun bot — cantumkan
+        kredit, jangan spam request.
+      </p>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { icon } from '/assets/js/icons.js';
+  import { boot, initReveal, num } from '/assets/js/app.js';
+
+  document.querySelectorAll('[data-ico]').forEach((el) => {
+    const big = el.classList.contains('contact-ico');
+    el.insertAdjacentHTML('afterbegin', icon(el.dataset.ico, big ? 22 : 15));
+  });
+
+  boot('information');
+  initReveal();
+
+  Promise.all([
+    fetch('/api/system').then((r) => r.json()),
+    fetch('/api/catalog').then((r) => r.json()),
+  ])
+    .then(([sys, cat]) => {
+      document.getElementById('i-runtime').textContent = sys.runtime;
+      document.getElementById('i-colo').textContent = `${sys.colo} · ${sys.region}`;
+      document.getElementById('i-total').textContent = `${num(cat.total)} endpoint aktif`;
+      const badge = document.querySelector('[data-badge="docs"]');
+      if (badge) badge.textContent = cat.total;
+    })
+    .catch(() => {
+      document.getElementById('i-runtime').textContent = 'Cloudflare Workers';
+    });
+</script>
+</body>
+</html>

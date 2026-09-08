@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation — DikZzCodeAPIs</title>
+<meta name="description" content="Dokumentasi lengkap DikZzCodeAPIs. Jelajahi semua endpoint dan uji langsung dari satu tempat.">
+<meta name="author" content="DikZzCode">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/sidebar.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/modal.css">
+<link rel="stylesheet" href="/assets/css/effects.css">
+<link rel="stylesheet" href="/assets/css/brutal.css">
+</head>
+<body>
+
+<main class="main">
+  <header class="page-head reveal">
+    <span class="eyebrow" data-ico="docs">Documentation</span>
+    <h1><span class="brand-lockup lg"><span class="dz">DikZzCode</span><i class="api-it">APIs</i></span> Docs</h1>
+    <p class="lede">
+      Jelajahi seluruh endpoint dan uji langsung dari satu tempat, tanpa perlu
+      tools tambahan. Klik kartu mana pun untuk membuka playground-nya.
+    </p>
+  </header>
+
+  <section class="stat-grid stagger">
+    <div class="stat t-iris">
+      <div class="stat-top">
+        <div class="stat-value" id="s-endpoints">0</div>
+        <div class="stat-ico" data-ico="layers"></div>
+      </div>
+      <div class="stat-label">Total API</div>
+      <div class="stat-foot" id="s-endpoints-foot">—</div>
+    </div>
+
+    <div class="stat t-cyan">
+      <div class="stat-top">
+        <div class="stat-value" id="s-categories">0</div>
+        <div class="stat-ico" data-ico="docs"></div>
+      </div>
+      <div class="stat-label">Categories</div>
+      <div class="stat-foot">Semua endpoint terkelompok</div>
+    </div>
+
+    <div class="stat t-lime">
+      <div class="stat-top">
+        <div class="stat-value" id="s-ram">—</div>
+        <div class="stat-ico" data-ico="ram"></div>
+      </div>
+      <div class="stat-label">RAM</div>
+      <div class="meter"><i data-fill="34%"></i></div>
+      <div class="stat-foot" id="s-ram-foot">—</div>
+    </div>
+
+    <div class="stat t-pink">
+      <div class="stat-top">
+        <div class="stat-value" id="s-cpu" style="font-size:20px">—</div>
+        <div class="stat-ico" data-ico="chip"></div>
+      </div>
+      <div class="stat-label">CPU</div>
+      <div class="meter"><i data-fill="26%"></i></div>
+      <div class="stat-foot" id="s-cpu-foot">—</div>
+    </div>
+  </section>
+
+  <div class="search-wrap reveal">
+    <span data-ico="search"></span>
+    <input id="search" class="search" type="search" placeholder="Search endpoint..." autocomplete="off">
+    <span class="search-kbd">/</span>
+  </div>
+
+  <div class="chips reveal" id="chips"></div>
+
+  <div id="catalog">
+    <div class="empty"><span class="spinner"></span> Memuat katalog endpoint…</div>
+  </div>
+</main>
+
+<script type="module">
+  import { icon } from '/assets/js/icons.js';
+  // Fill the declarative icon slots before the page module renders.
+  document.querySelectorAll('[data-ico]').forEach((el) => {
+    el.insertAdjacentHTML('afterbegin', icon(el.dataset.ico, el.classList.contains('stat-ico') ? 17 : 14));
+  });
+</script>
+<script type="module" src="/assets/js/docs.js"></script>
+</body>
+</html>
