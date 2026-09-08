@@ -19,6 +19,7 @@
   "dependencies": {
     "curve25519-js": "^0.0.4",
     "libphonenumber-js": "^1.13.12",
-    "telegram": "^2.26.22"
+    "telegram": "^2.26.22",
+    "tunnelfetch": "^1.13.0"
   }
 }
