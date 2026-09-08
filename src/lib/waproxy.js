@@ -77,6 +77,31 @@ class Reader {
   }
 }
 
+/** Kode reply SOCKS5 (RFC 1928 §6) — biar log tidak cuma menampilkan angka. */
+function jelaskanKodeSocks(code) {
+  const tabel = {
+    1: 'kegagalan umum di server proxy',
+    2: 'koneksi tidak diizinkan oleh ruleset',
+    3: 'jaringan tujuan tidak terjangkau',
+    4: 'host tujuan tidak terjangkau',
+    5: 'koneksi ditolak tujuan',
+    6: 'TTL habis',
+    7: 'perintah tidak didukung',
+    8: 'tipe alamat tidak didukung',
+  };
+  return code === null ? 'tanpa respons' : tabel[code] || `code ${code}`;
+}
+
+/**
+ * Kredensial dari URL selalu percent-encoded (URL constructor yang melakukannya).
+ * Kalau dikirim mentah ke proxy, username/password yang mengandung karakter
+ * spesial jadi tidak cocok dan auth ditolak.
+ */
+const kredensial = (proxy) => ({
+  user: decodeURIComponent(proxy.username || ''),
+  pass: decodeURIComponent(proxy.password || ''),
+});
+
 /** SOCKS5 handshake: greet (no-auth + user/pass) → auth → CONNECT by hostname. */
 async function socks5Handshake(writer, reader, proxy, target) {
   await writer.write(new Uint8Array([5, 2, 0, 2]));
@@ -84,8 +109,9 @@ async function socks5Handshake(writer, reader, proxy, target) {
   let head = await reader.readExact(2);
   if (!head || head[0] !== 5) throw new Error('bukan respons SOCKS5');
   if (head[1] === 2) {
-    const user = enc.encode(proxy.username);
-    const pass = enc.encode(proxy.password);
+    const kredit = kredensial(proxy);
+    const user = enc.encode(kredit.user);
+    const pass = enc.encode(kredit.pass);
     const auth = new Uint8Array(3 + user.length + pass.length);
     auth.set([1, user.length], 0);
     auth.set(user, 2);
@@ -95,20 +121,20 @@ async function socks5Handshake(writer, reader, proxy, target) {
     head = await reader.readExact(2);
     if (!head || head[1] !== 0) throw new Error('auth proxy ditolak');
   } else if (head[1] !== 0) {
-    throw new Error('SOCKS minti metode auth yang tidak didukung');
+    throw new Error('proxy minta metode auth yang tidak didukung');
   }
 
   const host = enc.encode(target.hostname);
   const req = new Uint8Array(7 + host.length);
   req.set([5, 1, 0, 3, host.length], 0);
   req.set(host, 5);
-  req[5 + host.length] = target.port >> 8;
+  req[5 + host.length] = (target.port >> 8) & 255;
   req[6 + host.length] = target.port & 255;
   await writer.write(req);
 
   head = await reader.readExact(4);
   if (!head || head[0] !== 5 || head[1] !== 0) {
-    throw new Error(`SOCKS CONNECT ditolak (code ${head ? head[1] : '?'})`);
+    throw new Error(`SOCKS CONNECT ditolak (${jelaskanKodeSocks(head ? head[1] : null)})`);
   }
   const atyp = head[3];
   let addrLen;
@@ -124,11 +150,13 @@ async function socks5Handshake(writer, reader, proxy, target) {
 
 /** HTTP proxy handshake: CONNECT with Basic Proxy-Authorization, expect 2xx. */
 async function httpConnectHandshake(writer, reader, proxy, target) {
-  const auth = btoa(`${proxy.username}:${proxy.password}`);
+  const kredit = kredensial(proxy);
+  const auth = btoa(`${kredit.user}:${kredit.pass}`);
   const req =
     `CONNECT ${target.hostname}:${target.port} HTTP/1.1\r\n` +
     `Host: ${target.hostname}:${target.port}\r\n` +
-    `Proxy-Authorization: Basic ${auth}\r\n\r\n`;
+    `Proxy-Authorization: Basic ${auth}\r\n` +
+    'Proxy-Connection: Keep-Alive\r\n\r\n';
   await writer.write(enc.encode(req));
 
   const statusLine = await reader.readLine();
@@ -195,50 +223,91 @@ export function parseHttpResponse(raw) {
  *
  * NOTE: verified working from the real Cloudflare edge. The local dev preview
  * (`wrangler dev --remote`) cannot serve TLS sockets at all — even a direct
- * `secureTransport: "on"` connection to a target hangs there — so proxy runs
- * can only be exercised on a deployed Worker.
+ * `secureTransport: "on"` connection to a target hangs there. Untuk menguji
+ * jalur ini tanpa deploy, pakai `node test/_wa_proxy_probe.mjs <proxy-uri>`
+ * yang menukar `cloudflare:sockets` dengan shim node:net/tls.
  */
 export async function proxiedGet(proxyUrl, targetUrl, headers = {}, timeoutMs = 25000) {
   const proxy = new URL(proxyUrl);
   const target = new URL(targetUrl);
-  target.port = target.port || '443';
+
+  // `new URL('https://x/').port` itu STRING KOSONG, bukan '443' — jadi pola
+  // `target.port || 443` di URL object tidak pernah kepakai dan CONNECT dulu
+  // dikirim ke port 0. Port tujuan dihitung terpisah, jangan disimpan balik
+  // ke URL object.
+  const portTujuan = Number(target.port) || (target.protocol === 'http:' ? 80 : 443);
+  const tujuan = { hostname: target.hostname, port: portTujuan };
 
   const socket = await connect(
     { hostname: proxy.hostname, port: Number(proxy.port) || 7778 },
     { secureTransport: 'starttls' }
   );
 
-  const timer = setTimeout(() => socket.close().catch(() => {}), timeoutMs);
-  try {
+  // Satu-satunya cara membatalkan pembacaan socket yang menggantung adalah
+  // membalapkannya dengan timer. Setelah startTls, socket lama TIDAK boleh
+  // di-close (runtime melempar), makanya penutupan selalu lewat tutupTunnel().
+  let sudahUpgrade = false;
+  let secure = null;
+  let sudahTutup = false;
+  const tutupTunnel = () => {
+    if (sudahTutup) return;
+    sudahTutup = true;
+    try {
+      const yangHidup = sudahUpgrade ? secure : socket;
+      yangHidup?.close?.()?.catch?.(() => {});
+    } catch {
+      /* socket sudah mati duluan, tidak ada yang perlu dibereskan */
+    }
+  };
+
+  let timer;
+  const batasWaktu = new Promise((_, tolak) => {
+    timer = setTimeout(() => {
+      tutupTunnel();
+      tolak(new Error(`timeout ${timeoutMs}ms lewat proxy`));
+    }, timeoutMs);
+  });
+
+  const jalan = async () => {
     const writer = socket.writable.getWriter();
     const reader = new Reader(socket.readable.getReader());
 
     if (proxy.protocol === 'http:' || proxy.protocol === 'https:') {
-      await httpConnectHandshake(writer, reader, proxy, target);
+      await httpConnectHandshake(writer, reader, proxy, tujuan);
     } else {
-      await socks5Handshake(writer, reader, proxy, target);
+      await socks5Handshake(writer, reader, proxy, tujuan);
     }
 
     // startTls() invalidates the current socket, so release the stream locks first.
     writer.releaseLock();
     reader.reader.releaseLock();
-    const secure = socket.startTls({ expected_server_hostname: target.hostname });
+    secure = socket.startTls({ expected_server_hostname: target.hostname });
+    sudahUpgrade = true;
 
     const secWriter = secure.writable.getWriter();
     const secReader = new Reader(secure.readable.getReader());
 
+    // Header bawaan pemanggil menang; Host/Connection dikunci di sini supaya
+    // tidak ada duplikat yang bikin upstream balas 400.
     const headerLines = Object.entries(headers)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join('\r\n');
+      .filter(([k]) => !['host', 'connection'].includes(k.toLowerCase()))
+      .map(([k, v]) => `${k}: ${v}\r\n`)
+      .join('');
+    const hostHeader = portTujuan === 443 ? target.hostname : `${target.hostname}:${portTujuan}`;
     const req =
       `GET ${target.pathname}${target.search} HTTP/1.1\r\n` +
-      `Host: ${target.hostname}\r\n${headerLines}\r\nConnection: close\r\n\r\n`;
+      `Host: ${hostHeader}\r\n${headerLines}Connection: close\r\n\r\n`;
     await secWriter.write(enc.encode(req));
 
     const raw = await secReader.readAll();
+    if (!raw.length) throw new Error('proxy menutup tunnel tanpa mengirim respons');
     return parseHttpResponse(raw);
+  };
+
+  try {
+    return await Promise.race([jalan(), batasWaktu]);
   } finally {
     clearTimeout(timer);
-    socket.close().catch(() => {});
+    tutupTunnel();
   }
 }
