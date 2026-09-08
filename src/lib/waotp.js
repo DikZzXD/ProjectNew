@@ -30,6 +30,24 @@ const CODE_URL = 'https://v.whatsapp.net/v2/code';
 /** Delivery methods the upstream accepts for a code request. */
 export const WA_OTP_METHODS = ['sms', 'voice', 'wa_old'];
 
+/**
+ * UA diacak tiap probe. Kalau semua request datang dengan device+iOS yang
+ * identik, fingerprint "satu device menembak banyak nomor" gampang di-flag dan
+ * upstream membalas placeholder, bukan cooldown asli.
+ */
+const DEVICE_IOS = [
+  'Apple-iPhone_12',
+  'Apple-iPhone_13',
+  'Apple-iPhone_13_Pro',
+  'Apple-iPhone_14',
+  'Apple-iPhone_14_Pro',
+  'Apple-iPhone_15',
+  'Apple-iPhone_15_Pro',
+  'Apple-iPhone_SE_3',
+];
+const VERSI_IOS = ['16.7.8', '17.5.1', '17.6.1', '18.0', '18.1.1'];
+const acak = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 export class WaOtpError extends Error {
   constructor(message, status = 400) {
     super(message);
@@ -133,7 +151,7 @@ function buildCodeRequest({ cc, national, method, version }) {
   return {
     url: `${CODE_URL}?${new URLSearchParams(params).toString()}`,
     headers: {
-      'User-Agent': `WhatsApp/${version} iOS/17.5.1 Device/Apple-iPhone_13`,
+      'User-Agent': `WhatsApp/${version} iOS/${acak(VERSI_IOS)} Device/${acak(DEVICE_IOS)}`,
       Accept: 'text/json',
     },
   };
@@ -163,9 +181,14 @@ async function requestDirect(url, headers) {
   }
 }
 
-/** Proxy transport: one GET through the tunnel; non-JSON or transport errors bubble up. */
+/**
+ * Proxy transport: one GET through the tunnel; non-JSON or transport errors bubble up.
+ *
+ * Budget 8 detik: exit residential yang sehat balas < 3 detik, sisanya lebih
+ * baik cepat menyerah supaya slot balapan bisa dipakai exit berikutnya.
+ */
 async function requestViaProxy(proxyUrl, url, headers) {
-  const { status, text } = await proxiedGet(proxyUrl, url, headers, 12000);
+  const { status, text } = await proxiedGet(proxyUrl, url, headers, 8000);
   if (status !== 200) throw new Error(`upstream HTTP ${status}`);
   return JSON.parse(text);
 }
@@ -207,52 +230,135 @@ const waitField = (seconds) =>
   Number.isFinite(seconds) ? { seconds, human: humanWait(seconds) } : null;
 
 /**
+ * Jawaban yang benar-benar berisi cooldown nomor, bukan placeholder rate-limit.
+ *
+ * WhatsApp membalas `no_routes` + semua *_wait = 3600 untuk IP yang dianggap
+ * kotor (egress datacenter, exit yang sudah kebanyakan probe). Itu properti
+ * IP-nya, bukan properti nomornya, jadi hasil begitu tidak boleh dipakai —
+ * lebih baik lanjut ke exit berikutnya. `blocked` juga IP-scoped di sini:
+ * exit yang sama membalas blocked untuk nomor yang exit lain bilang too_recent.
+ */
+function jawabanAsli(raw) {
+  if (!raw || typeof raw !== 'object') return false;
+  if (raw.reason === 'no_routes' || raw.reason === 'blocked') return false;
+  return Number.isFinite(raw.sms_wait) || raw.status === 'sent';
+}
+
+/**
+ * Balapkan beberapa proxy sekaligus, menangkan yang pertama membalas jawaban
+ * asli. Begitu satu exit menang, sisanya diabaikan.
+ *
+ * `buatBerkas(px)` dipanggil tepat saat exit itu mau dipakai, bukan di muka:
+ * tiap berkas berisi sepasang keypair curve25519 baru, dan membuat semuanya
+ * sekaligus untuk 20+ exit membakar CPU budget Worker tanpa guna karena
+ * balapan biasanya berhenti setelah beberapa exit pertama.
+ *
+ * Kenapa paralel, bukan berurutan: satu exit residential butuh ~1-3 detik dan
+ * mayoritas exit membalas placeholder, jadi mode berurutan hampir selalu
+ * kehabisan waktu sebelum ketemu exit bersih. `lebar` ditahan di 5 karena
+ * Workers cuma mengizinkan 6 koneksi keluar bersamaan per request.
+ */
+async function balapProxy(daftarProxy, buatBerkas, lebar = 5) {
+  let indeks = 0;
+  let cadangan = null; // hasil placeholder terakhir, dipakai kalau tak ada yang asli
+
+  return new Promise((selesaikan) => {
+    let aktif = 0;
+    let sudahSelesai = false;
+
+    const majukan = () => {
+      if (sudahSelesai) return;
+
+      while (aktif < lebar && indeks < daftarProxy.length) {
+        const px = daftarProxy[indeks++];
+        const { url, headers } = buatBerkas(px);
+        aktif += 1;
+
+        requestViaProxy(px, url, headers)
+          .then((raw) => {
+            if (sudahSelesai) return;
+            if (jawabanAsli(raw)) {
+              sudahSelesai = true;
+              selesaikan({ raw, via: describeProxy(px) });
+              return;
+            }
+            cadangan ||= { raw, via: `${describeProxy(px)} — jawaban generik` };
+          })
+          .catch((e) => {
+            console.log('[waotp] proxy gagal:', describeProxy(px), '→', e?.message || e);
+          })
+          .finally(() => {
+            aktif -= 1;
+            majukan();
+          });
+      }
+
+      // Antrian habis dan tidak ada request yang masih jalan.
+      if (!sudahSelesai && aktif === 0 && indeks >= daftarProxy.length) {
+        sudahSelesai = true;
+        selesaikan(cadangan);
+      }
+    };
+
+    majukan();
+  });
+}
+
+/**
  * Full detection for one number: cooldown per delivery method, block status,
  * and the raw upstream verdict. Throws WaOtpError on invalid input or an
  * unreachable upstream; every upstream verdict (even "blocked") is a result.
  *
  * When env.WA_PROXIES is set (one socks5:// or http:// URI per line) the probe
- * goes out through a randomly picked proxy from the list — WhatsApp blankets
- * datacenter egress IPs with a generic 3600 response, so a residential exit
- * reads real per-number cooldowns. Proxies are tried sequentially (max 3) on
- * transport failure only — a dead proxy never sent anything to WhatsApp, so
- * rotating it is not a second probe. If every proxy fails, fall back direct
- * and say so in `via`.
+ * goes out through residential exits — WhatsApp blankets datacenter egress IPs
+ * with a generic no_routes + 3600 answer, so only a clean residential exit
+ * reads real per-number cooldowns. Exits are raced (see balapProxy) and the
+ * first genuine answer wins; if every exit only returns the generic answer we
+ * surface the last one and say so in `via`.
  */
 export async function detectWaOtp({ number, method = 'sms', env }) {
   const version = env?.WA_VERSION || WA_VERSION_DEFAULT;
   const target = parseWaNumber(number);
-
-  const { url, headers } = buildCodeRequest({
-    cc: target.cc,
-    national: target.national,
-    method,
-    version,
-  });
 
   const proxies = parseProxyList(env?.WA_PROXIES);
   let raw = null;
   let via = 'langsung (tanpa proxy)';
 
   if (proxies.length) {
-    const shuffled = [...proxies];
-    for (let i = shuffled.length - 1; i > 0; i--) {
+    // Acak urutan supaya exit yang sama tidak selalu kena giliran pertama —
+    // exit yang terlalu sering dipakai lebih cepat dianggap kotor upstream.
+    const urutan = [...proxies];
+    for (let i = urutan.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      [urutan[i], urutan[j]] = [urutan[j], urutan[i]];
     }
-    for (const px of shuffled.slice(0, 3)) {
-      try {
-        raw = await requestViaProxy(px, url, headers);
-        via = describeProxy(px);
-        break;
-      } catch (e) {
-        console.log('[waotp] proxy gagal:', describeProxy(px), '→', e?.message || e);
-      }
+
+    // Tiap percobaan proxy pakai identitas device baru: kalau query string
+    // (fdid/expid/keypair) diulang persis dari IP berbeda, upstream membaca
+    // pola itu sebagai replay dan balik ke jawaban generik.
+    const lebar = Number(env?.WA_PROXY_LEBAR) || 5;
+    const hasil = await balapProxy(
+      urutan,
+      () => buildCodeRequest({ cc: target.cc, national: target.national, method, version }),
+      lebar
+    );
+    if (hasil) {
+      raw = hasil.raw;
+      via = hasil.via;
+    } else {
+      via = 'langsung (semua proxy gagal, fallback)';
     }
-    if (!raw) via = 'langsung (semua proxy gagal, fallback)';
   }
 
-  if (!raw) raw = await requestDirect(url, headers);
+  if (!raw) {
+    const { url, headers } = buildCodeRequest({
+      cc: target.cc,
+      national: target.national,
+      method,
+      version,
+    });
+    raw = await requestDirect(url, headers);
+  }
 
   const waitKeys = ['sms', 'voice', 'wa_old', 'email_otp', 'flash'];
   const waits = {};
