@@ -261,6 +261,7 @@ function jawabanAsli(raw) {
 async function balapProxy(daftarProxy, buatBerkas, lebar = 5) {
   let indeks = 0;
   let cadangan = null; // hasil placeholder terakhir, dipakai kalau tak ada yang asli
+  const kegagalan = []; // alasan tiap exit gugur, buat diagnosa di respons
 
   return new Promise((selesaikan) => {
     let aktif = 0;
@@ -279,13 +280,15 @@ async function balapProxy(daftarProxy, buatBerkas, lebar = 5) {
             if (sudahSelesai) return;
             if (jawabanAsli(raw)) {
               sudahSelesai = true;
-              selesaikan({ raw, via: describeProxy(px) });
+              selesaikan({ raw, via: describeProxy(px), kegagalan });
               return;
             }
-            cadangan ||= { raw, via: `${describeProxy(px)} — jawaban generik` };
+            cadangan ||= { raw, via: `${describeProxy(px)} — jawaban generik`, kegagalan };
           })
           .catch((e) => {
-            console.log('[waotp] proxy gagal:', describeProxy(px), '→', e?.message || e);
+            const pesan = e?.message || String(e);
+            kegagalan.push(`${describeProxy(px)}: ${pesan}`);
+            console.log('[waotp] proxy gagal:', describeProxy(px), '→', pesan);
           })
           .finally(() => {
             aktif -= 1;
@@ -296,7 +299,7 @@ async function balapProxy(daftarProxy, buatBerkas, lebar = 5) {
       // Antrian habis dan tidak ada request yang masih jalan.
       if (!sudahSelesai && aktif === 0 && indeks >= daftarProxy.length) {
         sudahSelesai = true;
-        selesaikan(cadangan);
+        selesaikan(cadangan || { raw: null, via: null, kegagalan });
       }
     };
 
@@ -323,6 +326,7 @@ export async function detectWaOtp({ number, method = 'sms', env }) {
   const proxies = parseProxyList(env?.WA_PROXIES);
   let raw = null;
   let via = 'langsung (tanpa proxy)';
+  let diagnosaProxy = [];
 
   if (proxies.length) {
     // Acak urutan supaya exit yang sama tidak selalu kena giliran pertama —
@@ -342,7 +346,8 @@ export async function detectWaOtp({ number, method = 'sms', env }) {
       () => buildCodeRequest({ cc: target.cc, national: target.national, method, version }),
       lebar
     );
-    if (hasil) {
+    diagnosaProxy = hasil?.kegagalan || [];
+    if (hasil?.raw) {
       raw = hasil.raw;
       via = hasil.via;
     } else {
@@ -392,6 +397,9 @@ export async function detectWaOtp({ number, method = 'sms', env }) {
     cooldown: Object.keys(waits).length || retryAfter ? { ...waits, retry_after: retryAfter } : null,
     fallback_methods: raw.fallback_methods || null,
     recommended_method: raw.recommended_method || null,
+    // Cuma muncul kalau ada exit yang gugur — ini yang membedakan "nomornya
+    // memang no_routes" dari "semua tunnel proxy patah".
+    proxy_errors: diagnosaProxy.length ? diagnosaProxy : undefined,
     raw,
   };
 }
