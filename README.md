@@ -1,12 +1,98 @@
-# DIKZZAPI
+<div align="center">
 
-API documentation portal + live playground running on Cloudflare Workers.
-Live at **https://api.makluxnxx.my.id** — built and maintained by **DikZz Xynzz**.
+# ⚡ DIKZZAPI
 
-## Layout
+**API documentation portal + live playground running on Cloudflare Workers.**
+
+Satu Worker, puluhan endpoint — AI, tools, stalker, temp-mail, bypass, dan lainnya —
+lengkap dengan halaman dokumentasi & playground interaktif.
+
+[![Live](https://img.shields.io/badge/live-api.makluxnxx.my.id-2ea44f?style=for-the-badge&logo=cloudflare&logoColor=white)](https://api.makluxnxx.my.id)
+[![Platform](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![Runtime](https://img.shields.io/badge/Node-JS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Storage](https://img.shields.io/badge/D1-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
+
+**🌐 Live:** [api.makluxnxx.my.id](https://api.makluxnxx.my.id) &nbsp;·&nbsp;
+**👤 Author:** DikZz Xynzz &nbsp;·&nbsp;
+**💬 Contact:** [WhatsApp](https://wa.me/6285757411154) · [Telegram](https://t.me/maklohytam)
+
+</div>
+
+---
+
+## 📑 Daftar Isi
+
+<table>
+<tr>
+<td valign="top">
+
+**Mulai**
+- [Layout proyek](#-layout)
+- [Menambah endpoint](#-adding-an-endpoint)
+- [Perintah npm](#-commands)
+- [Meta routes](#-meta-routes)
+- [Format response](#-response-format)
+
+</td>
+<td valign="top">
+
+**AI & Image**
+- [AI (Dola / Llama / Mistral)](#-ai)
+- [Rewind AI](#-rewind-ai)
+- [Text to image](#-text-to-image)
+
+</td>
+<td valign="top">
+
+**Tools & Data**
+- [Stalker](#-stalker)
+- [Search](#-search)
+- [Crypto tools](#-crypto-tools)
+- [Temp mail](#-temp-mail)
+- [Bypass](#-bypass)
+- [Screenshot Web](#-screenshot-web)
+- [Random Cecan](#-random-cecan)
+
+</td>
+<td valign="top">
+
+**Integrasi**
+- [WhatsApp React](#-whatsapp-react)
+- [Detect OTP WhatsApp](#-detect-otp-whatsapp)
+- [Ngl Spam](#-ngl-spam)
+- [Userbot Telegram](#-userbot-telegram-ubot-login)
+- [Telegram bot](#-telegram-bot)
+- [Nonecap key pool](#-nonecap-key-pool)
+- [Stats](#-stats)
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🧭 Sekilas endpoint
+
+| Kategori | Endpoint utama | Ringkasan |
+| --- | --- | --- |
+| 🤖 **AI** | `/v1/ai/dola` · `/v1/ai/llama` · `/v1/ai/mistral` · `/v1/ai/chat` | Chat & translate — Workers AI + Rewind AI |
+| 🎨 **Image** | `/v1/image/text2img` | Prompt → gambar, dibalas langsung sebagai `image` |
+| 🔎 **Search** | `/v1/search/{ytplay,youtube,pinterest}` | Cari audio, video, dan gambar |
+| 🕵️ **Stalker** | `/v1/stalk/{roblox,epepid,github,tiktok,instagram}` | Profil publik dalam envelope snake_case |
+| 🧰 **Tools** | `/v1/tools/{encrypt-*,ssweb,ngl-spam,alightmotion,…}` | Packer, screenshot, aktivasi, dan utilitas lain |
+| 📬 **Temp mail** | `/v1/tools/{emailqu,mailedu}` | Inbox sementara + ekstraksi OTP otomatis |
+| 🛡️ **Bypass** | `/v1/bypass/{turnstile-min,sfl}` | Solve Turnstile & resolve short-link |
+| 💬 **WhatsApp** | `/v1/tools/{whatsapp-react,detect-otp-whatsapp}` | React channel + cek cooldown OTP |
+| ✈️ **Telegram** | `/v1/tools/ubot-login` · `POST /api/telegram` | Userbot GramJS + management bot |
+
+> Katalog lengkap yang dirender halaman docs ada di `GET /api/catalog`.
+
+---
+
+## 📂 Layout
 
 ```
-E:\website-api
+.  (root proyek)
 ├─ wrangler.toml            Worker config (custom domain, D1, AI, assets)
 ├─ schema.sql               D1 tables: endpoint_stats, recent_requests, daily_stats,
 │                           rewind_keys, nonecap_keys
@@ -53,7 +139,7 @@ E:\website-api
    └─ test-keypool.mjs      Key-pool tests (npm run test:pool)
 ```
 
-## Adding an endpoint
+## 🧩 Adding an endpoint
 
 ```bash
 npm run new -- --name "Gemini AI" --category AI --slug gemini \
@@ -88,7 +174,7 @@ export default {
 Return `raw(body, contentType)` for binary payloads and set
 `responseType: 'image'` so the playground previews it.
 
-## Text to image
+## 🎨 Text to image
 
 `/v1/image/text2img` answers with the image itself — no JSON wrapper, no base64
 to decode, so it drops straight into an `<img src>` or a bot's photo upload:
@@ -104,7 +190,7 @@ working. The content type is taken from the upstream response rather than assume
 and a non-image reply is turned into a normal `fail()` instead of being passed
 through as a broken picture.
 
-## Random Cecan
+## 🖼️ Random Cecan
 
 Seven photo endpoints, one per region, all returning the picture directly like
 text2img does:
@@ -119,7 +205,7 @@ GET /v1/random/cecan/korea
 The seven files under `src/apis/random/` are one line each; the behaviour lives in
 the `cecan()` builder in `_cecan.js`, so a new region is a single export.
 
-## Stalker
+## 🕵️ Stalker
 
 `/v1/stalk/roblox?username=DikZzXynz08` returns a Roblox profile reshaped into
 this API's own snake_case envelope — `display_name`, `profile_picture`,
@@ -150,7 +236,7 @@ a direct lookup.
 (followers / following / posts) and `info` (private / verified / business /
 category). Missing categories come back as `null`, not the string `N/A`.
 
-## Search
+## 🔎 Search
 
 Search endpoints proxy through `src/lib/ikyy.js` and are re-wrapped so no
 upstream `creator` field leaks. Where the upstream needs an apikey it is fixed
@@ -171,7 +257,7 @@ still work, so the failure message points at the alternatives. `youtube` returns
 `url`; `pinterest` returns `{ query, count, results[] }` with `image_url`,
 `source` and nested `uploader`.
 
-## Ngl Spam
+## 📨 Ngl Spam
 
 `/v1/tools/ngl-spam` sends the same anonymous question to an NGL inbox several
 times:
@@ -190,7 +276,7 @@ instead of quietly sending nowhere. The NGL prompt type (`slug`) is picked at
 random server-side per run, so it is **not** a parameter — the chosen value is
 still echoed in the response for transparency.
 
-## Crypto tools
+## 🔐 Crypto tools
 
 These do **not** produce an opaque ciphertext — the whole point is a result you
 can still run. Each `encrypt-*` tool packs the source into a small self-executing
@@ -218,7 +304,7 @@ with no extra flags. `encrypt-python`/`encrypt-js` compress then base64;
 `encrypt-base64` skips compression (base64 layer only). `decrypt` auto-detects
 zlib vs plain and accepts either the whole packed file or just its base64 payload.
 
-## WhatsApp React
+## 💚 WhatsApp React
 
 `/v1/tools/whatsapp-react` sends emoji reactions to a WhatsApp *channel* post
 through asitha.top's bot pool.
@@ -241,7 +327,7 @@ exchange it for a short-lived token, then queue the reaction. The account bearer
 captcha solver or the coin balance runs dry the caller gets a plain "layanan
 sedang sibuk" note rather than a raw upstream failure.
 
-## Detect OTP WhatsApp
+## 📵 Detect OTP WhatsApp
 
 `/v1/tools/detect-otp-whatsapp` checks how long a number must wait before it may
 request a WhatsApp OTP again, and whether the number is blocked from requesting
@@ -291,7 +377,7 @@ Verification note: `wrangler dev` (local *and* `--remote` preview) cannot
 serve TLS sockets at all — even a direct `secureTransport: "on"` connection
 hangs there — so the proxy path can only be exercised on the deployed Worker.
 
-## Nonecap key pool
+## 🗝️ Nonecap key pool
 
 The hCaptcha on that flow is an Enterprise sitekey with `enc_get_req`, so only a
 paid solver mints a token the upstream accepts. One key is a single point of
@@ -340,7 +426,7 @@ fake D1 and a fake nonecap — 48 assertions, no network, no wrangler. The
 response shapes in it were taken from live probes, so the classifier is tested
 against what the service actually returns.
 
-## Userbot Telegram (Ubot Login)
+## 🤖 Userbot Telegram (Ubot Login)
 
 Satu endpoint untuk menghubungkan dan menjalankan akun userbot Telegram (`/v1/tools/ubot-login`), dibangun dengan GramJS di Cloudflare Workers dan mendukung seluruh fitur dari `test/userbot.py`.
 
@@ -367,7 +453,7 @@ Setelah login berhasil, akun dapat langsung menjalankan perintah userbot di apli
 
 **Keamanan & Penyimpanan Sesi:** Sesi Telegram MTProto disimpan terenkripsi menggunakan AES-256-GCM (`src/lib/crypto.js`) di D1. Kunci enkripsi dapat ditentukan via secret `UBOT_SECRET` (lokal `.dev.vars`, produksi `wrangler secret put UBOT_SECRET`). Hanya hash SHA-256 dari `account_token` yang disimpan, sehingga token akun aman dan tidak dapat dibocorkan.
 
-## Rewind AI
+## 🧠 Rewind AI
 
 `/v1/ai/chat` sits in front of the Rewind AI chat service. Keys are drawn at
 random from a D1 pool (`rewind_keys`) so quota is spread across whatever keys the
@@ -389,7 +475,7 @@ whitelist — `anthropic/claude-haiku-4.5` (default), `anthropic/claude-haiku-la
 `qwen/qwen3.6-flash`; anything outside the list is rejected up front. It answers
 `{ reply, model, type }` plus `usage` when the upstream reports it.
 
-## Telegram bot
+## ✈️ Telegram bot
 
 An owner-only management bot is wired to `POST /api/telegram` (set it as the bot
 webhook). Every update is checked against `OWNER_ID` first — anyone else gets a
@@ -436,7 +522,7 @@ chat log. The token and owner id come from `wrangler.toml [vars]`. The bot creat
 both the `rewind_keys` and `nonecap_keys` tables defensively, so it works even
 before `schema.sql` is applied.
 
-## Commands
+## ⌨️ Commands
 
 | Command | What it does |
 | --- | --- |
@@ -448,7 +534,7 @@ before `schema.sql` is applied.
 | `npm run test:pool` | Key-pool rotation + auto-delete tests (offline) |
 | `npm run tail` | Stream live production logs |
 
-## Meta routes
+## 🛰️ Meta routes
 
 | Route | Purpose |
 | --- | --- |
@@ -457,7 +543,7 @@ before `schema.sql` is applied.
 | `GET /api/system` | Runtime, RAM/CPU labels, serving colo |
 | `GET /api/health` | Uptime + endpoint count |
 
-## Stats
+## 📊 Stats
 
 `/api/stats` returns four groups. `window` covers the **last 24 hours only** and
 is what the dashboard's headline cards and Latest Requests feed read from;
@@ -469,14 +555,14 @@ ages out. `resets_in_ms` is measured from the oldest surviving row — that's wh
 the current window began. A row cap of 5000 keeps the aggregate queries cheap if
 traffic spikes.
 
-## AI
+## 🤖 AI
 
 `/v1/ai/dola` is an interactive chat endpoint — send `prompt`, get `reply` (max
 4000 characters). `/v1/ai/llama` and `/v1/ai/mistral` run on Workers AI, and
 `translate` is a task-shaped wrapper over the same models. `/v1/ai/chat` runs on
 Rewind AI — see the **Rewind AI** section.
 
-## Alight Motion activation
+## 🎬 Alight Motion activation
 
 One endpoint drives the whole flow, filed under Tools. The `link` parameter is
 what selects the step — leave it out to request the sign-in mail, pass it to
@@ -499,7 +585,7 @@ the same session. The newest pending job is resolved when verifying, so no
 The link expires after ~30 minutes, each one is single-use, and the quota is
 2 activations per day per account.
 
-## Temp mail
+## 📬 Temp mail
 
 Two services, one endpoint each, both pairing with the flow above.
 
@@ -543,7 +629,7 @@ decoded first: mail wraps long URLs across lines with a trailing `=` and writes
 `=` as `=3D`, so in raw form an `href=3D'…'` never matches and the only link in
 the message would be lost.
 
-## Bypass
+## 🛡️ Bypass
 
 `/v1/bypass/turnstile-min` solves a Cloudflare Turnstile challenge and returns a
 token ready to submit as the target form's `cf-turnstile-response` field:
@@ -562,14 +648,14 @@ field never reaches a caller. Tokens are single-use and expire quickly.
 link to its real destination, returning `original_url`, `destination_url` and a
 `message`. The upstream answer is re-wrapped in this API's envelope.
 
-## Screenshot Web
+## 📸 Screenshot Web
 
 `/v1/tools/ssweb?url=https%3A%2F%2Fexample.com` captures a full-page screenshot
 and returns the **image directly** (`image/png`), not a JSON wrapper — so it can
 be embedded straight into an `<img>` or saved to disk. The upstream call gets the
 90 s image timeout since rendering a page takes several seconds.
 
-## Response format
+## 📦 Response format
 
 ```json
 { "status": true,  "creator": "DikZz Xynzz — t.me/maklohytam", "result": {} }
@@ -584,8 +670,20 @@ text2img, Turnstile) go through `src/lib/ikyy.js`, which returns only the payloa
 and throws on anything else. The upstream stamps its own `creator` on every JSON
 body, and re-wrapping is what keeps that out of a DIKZZAPI response.
 
-## Contact
+## 📞 Contact
 
-- WhatsApp — https://wa.me/6285757411154
-- Telegram — https://t.me/maklohytam
-- Telegram (backup) — https://t.me/dikzxinxz
+<div align="center">
+
+| Kanal | Link |
+| --- | --- |
+| 💚 WhatsApp | [wa.me/6285757411154](https://wa.me/6285757411154) |
+| ✈️ Telegram | [t.me/maklohytam](https://t.me/maklohytam) |
+| ✈️ Telegram (backup) | [t.me/dikzxinxz](https://t.me/dikzxinxz) |
+
+<br>
+
+**Dibangun & dirawat oleh DikZz Xynzz** · berjalan di Cloudflare Workers ⚡
+
+<sub>© DIKZZAPI — <a href="https://api.makluxnxx.my.id">api.makluxnxx.my.id</a></sub>
+
+</div>
